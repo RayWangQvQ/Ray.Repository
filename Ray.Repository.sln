@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33516.290
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{790957A6-6F81-4AEE-BE1F-82027596B39B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{E458C57D-F313-4964-B953-C60DEFF7CBB6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ray.Repository", "src\Ray.Repository\Ray.Repository.csproj", "{C4CB3DD4-7F6D-4039-80FB-3295051527A5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ray.Repository.EntityFramework", "src\Ray.Repository.EntityFramework\Ray.Repository.EntityFramework.csproj", "{A1F28B04-1683-4602-8C9D-FCF4240D09CB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqliteSample", "sample\SqliteSample\SqliteSample.csproj", "{F21F9A38-76D7-4C37-B524-AF1C519EC759}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlServerSample", "sample\SqlServerSample\SqlServerSample.csproj", "{7511BE26-AFBA-44EF-9423-6EF2DFA36A1A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{4A1FAA09-EA4D-4DA4-B58C-228206B7D9FE}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C4CB3DD4-7F6D-4039-80FB-3295051527A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4CB3DD4-7F6D-4039-80FB-3295051527A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4CB3DD4-7F6D-4039-80FB-3295051527A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4CB3DD4-7F6D-4039-80FB-3295051527A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1F28B04-1683-4602-8C9D-FCF4240D09CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1F28B04-1683-4602-8C9D-FCF4240D09CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1F28B04-1683-4602-8C9D-FCF4240D09CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1F28B04-1683-4602-8C9D-FCF4240D09CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F21F9A38-76D7-4C37-B524-AF1C519EC759}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F21F9A38-76D7-4C37-B524-AF1C519EC759}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F21F9A38-76D7-4C37-B524-AF1C519EC759}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F21F9A38-76D7-4C37-B524-AF1C519EC759}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7511BE26-AFBA-44EF-9423-6EF2DFA36A1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7511BE26-AFBA-44EF-9423-6EF2DFA36A1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7511BE26-AFBA-44EF-9423-6EF2DFA36A1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7511BE26-AFBA-44EF-9423-6EF2DFA36A1A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C4CB3DD4-7F6D-4039-80FB-3295051527A5} = {790957A6-6F81-4AEE-BE1F-82027596B39B}
+		{A1F28B04-1683-4602-8C9D-FCF4240D09CB} = {790957A6-6F81-4AEE-BE1F-82027596B39B}
+		{F21F9A38-76D7-4C37-B524-AF1C519EC759} = {E458C57D-F313-4964-B953-C60DEFF7CBB6}
+		{7511BE26-AFBA-44EF-9423-6EF2DFA36A1A} = {E458C57D-F313-4964-B953-C60DEFF7CBB6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {93047F0C-2B73-416C-9ED1-C4913C6EABA1}
+	EndGlobalSection
+EndGlobal
