@@ -44,6 +44,42 @@ namespace Ray.Repository.EntityFramework
             }
         }
 
+        public static void AddIdentityDefaultRepositories<TDbContext>(this IServiceCollection services, Action<DbContextOptionsBuilder> optionsAction)
+            where TDbContext : RayIdentityDbContext<TDbContext>
+        {
+            // MediatR
+            services.AddMediatR(c =>
+            {
+                c.RegisterServicesFromAssembly(typeof(TDbContext).Assembly);
+            });
+
+            // DateFilter
+            services.AddDataFilter();
+
+            // DbContext
+            services.AddDbContext<TDbContext>(optionsBuilder =>
+            {
+#if DEBUG
+                optionsBuilder.LogTo(Console.WriteLine);
+                optionsBuilder.EnableSensitiveDataLogging();
+#endif
+
+                optionsAction?.Invoke(optionsBuilder);
+            });
+
+            // UnitOfWork
+            services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<TDbContext>());
+
+            var entityTypes = GetEntityTypesFromDbContext(typeof(TDbContext));
+            foreach (var entityType in entityTypes)
+            {
+                services.AddDefaultRepository(
+                    entityType,
+                    GetDefaultRepositoryImplementationType(typeof(TDbContext), entityType)
+                );
+            }
+        }
+
         public static IServiceCollection AddDefaultRepository(this IServiceCollection services,
             Type entityType,
             Type repositoryImplementationType)
