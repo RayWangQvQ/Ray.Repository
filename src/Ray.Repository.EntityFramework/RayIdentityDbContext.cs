@@ -123,10 +123,10 @@ namespace Ray.Repository.EntityFramework
 
         public Dictionary<string, object> Items { get; private set; } = new Dictionary<string, object>();
 
-        public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
         {
-            var result = await base.SaveChangesAsync(cancellationToken);
-            if (_mediator != null) await this.DispatchDomainEventsAsync(_mediator);
+            var result = await SaveChangesAsync(cancellationToken);
+            if (_mediator != null) await DispatchDomainEventsAsync(_mediator);
             return true;
         }
 

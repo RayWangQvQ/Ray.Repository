@@ -1,18 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AssemblyName>Ray.Repository.EntityFramework</AssemblyName>
+		<PackageId>Ray.Repository.EntityFramework</PackageId>
+		<Version>0.0.3</Version>
+		<Authors>Ray</Authors>
+		<Company>Ray</Company>
+		<PackageProjectUrl>https://github.com/RayWangQvQ/Ray.Repository</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/RayWangQvQ/Ray.Repository</RepositoryUrl>
+		<Description>
+			This client library is a repository that including DB CRUD etc.
+		</Description>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.19" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.8" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.19" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.8" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Ray.Repository\Ray.Repository.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Ray.Repository\Ray.Repository.csproj" />
+	</ItemGroup>
 
 </Project>
