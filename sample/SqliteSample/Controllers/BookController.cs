@@ -11,7 +11,7 @@ namespace SqlServerSample.Controllers
     {
         private readonly IBaseRepository<Book, long> _repo;
 
-        public BookController(IBaseRepository<Book,long> repo)
+        public BookController(IBaseRepository<Book, long> repo)
         {
             _repo = repo;
         }

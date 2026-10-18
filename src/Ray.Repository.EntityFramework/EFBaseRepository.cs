@@ -1,16 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using Ray.DDD;
 
 namespace Ray.Repository.EntityFramework
 {
-    public class EFBaseRepository<TDbContext, TEntity> : BaseRepository<TEntity>, IEFBaseRepository<TEntity>
+    public class EFBaseRepository<TDbContext, TEntity>
+        : BaseRepository<TEntity>,
+            IEFBaseRepository<TEntity>
         where TDbContext : DbContext
         where TEntity : class, IEntity
     {
         private readonly TDbContext _dbContext;
 
-        public EFBaseRepository(TDbContext dbContext, IUnitOfWork unitOfWork) : base(unitOfWork)
+        public EFBaseRepository(TDbContext dbContext, IUnitOfWork unitOfWork)
+            : base(unitOfWork)
         {
             _dbContext = dbContext;
         }
@@ -35,28 +38,43 @@ namespace Ray.Repository.EntityFramework
             return (await GetDbSetAsync()).AsQueryable();
         }
 
-        public override async Task<IEnumerable<TEntity>> QueryableToListAsync(IQueryable<TEntity> query, CancellationToken cancellationToken = default)
+        public override async Task<IEnumerable<TEntity>> QueryableToListAsync(
+            IQueryable<TEntity> query,
+            CancellationToken cancellationToken = default
+        )
         {
             return await query.ToListAsync(cancellationToken);
         }
 
-        public override async Task<long> LongCountAsync(IQueryable<TEntity> query, CancellationToken cancellationToken = default)
+        public override async Task<long> LongCountAsync(
+            IQueryable<TEntity> query,
+            CancellationToken cancellationToken = default
+        )
         {
             return await query.LongCountAsync(cancellationToken);
         }
 
-        public override async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        public override async Task<TEntity> FindAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            CancellationToken cancellationToken = default
+        )
         {
             return await (await GetQueryableAsync())
-                    .Where(predicate)
-                    .SingleOrDefaultAsync(cancellationToken);
+                .Where(predicate)
+                .SingleOrDefaultAsync(cancellationToken);
         }
 
-        public override async Task<TEntity> InsertAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
+        public override async Task<TEntity> InsertAsync(
+            TEntity entity,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             var dbContext = await GetDbContextAsync();
 
-            var savedEntity = (await dbContext.Set<TEntity>().AddAsync(entity, cancellationToken)).Entity;
+            var savedEntity = (
+                await dbContext.Set<TEntity>().AddAsync(entity, cancellationToken)
+            ).Entity;
 
             if (autoSave)
             {
@@ -66,7 +84,11 @@ namespace Ray.Repository.EntityFramework
             return savedEntity;
         }
 
-        public override async Task InsertManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+        public override async Task InsertManyAsync(
+            IEnumerable<TEntity> entities,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             var entityArray = entities.ToArray();
             var dbContext = await GetDbContextAsync();
@@ -79,7 +101,11 @@ namespace Ray.Repository.EntityFramework
             }
         }
 
-        public override async Task<TEntity> UpdateAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
+        public override async Task<TEntity> UpdateAsync(
+            TEntity entity,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             var dbContext = await GetDbContextAsync();
 
@@ -95,7 +121,11 @@ namespace Ray.Repository.EntityFramework
             return updatedEntity;
         }
 
-        public override async Task UpdateManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+        public override async Task UpdateManyAsync(
+            IEnumerable<TEntity> entities,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             var dbContext = await GetDbContextAsync();
 
@@ -107,7 +137,11 @@ namespace Ray.Repository.EntityFramework
             }
         }
 
-        public override async Task DeleteAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
+        public override async Task DeleteAsync(
+            TEntity entity,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             var dbContext = await GetDbContextAsync();
 
@@ -119,14 +153,16 @@ namespace Ray.Repository.EntityFramework
             }
         }
 
-        public override async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default)
+        public override async Task DeleteAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             var dbContext = await GetDbContextAsync();
             var dbSet = dbContext.Set<TEntity>();
 
-            var entities = await dbSet
-                .Where(predicate)
-                .ToListAsync(cancellationToken);
+            var entities = await dbSet.Where(predicate).ToListAsync(cancellationToken);
 
             await DeleteManyAsync(entities, autoSave, cancellationToken);
 
@@ -136,7 +172,11 @@ namespace Ray.Repository.EntityFramework
             }
         }
 
-        public override async Task DeleteManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+        public override async Task DeleteManyAsync(
+            IEnumerable<TEntity> entities,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             var dbContext = await GetDbContextAsync();
 
@@ -149,31 +189,41 @@ namespace Ray.Repository.EntityFramework
         }
     }
 
-    public class EFBaseRepository<TDbContext, TEntity, TKey> : EFBaseRepository<TDbContext, TEntity>, IEFBaseRepository<TEntity, TKey>
-    where TDbContext : DbContext
-    where TEntity : class, IEntity<TKey>
+    public class EFBaseRepository<TDbContext, TEntity, TKey>
+        : EFBaseRepository<TDbContext, TEntity>,
+            IEFBaseRepository<TEntity, TKey>
+        where TDbContext : DbContext
+        where TEntity : class, IEntity<TKey>
     {
         private readonly IDataFilter<ISoftDelete> _softDeleteFilter;
 
         public EFBaseRepository(TDbContext dbContext, IUnitOfWork unitOfWork)
-            : base(dbContext, unitOfWork)
-        {
-        }
+            : base(dbContext, unitOfWork) { }
 
-        public EFBaseRepository(TDbContext dbContext, IUnitOfWork unitOfWork, IDataFilter<ISoftDelete> softDeleteFilter)
+        public EFBaseRepository(
+            TDbContext dbContext,
+            IUnitOfWork unitOfWork,
+            IDataFilter<ISoftDelete> softDeleteFilter
+        )
             : base(dbContext, unitOfWork)
         {
             _softDeleteFilter = softDeleteFilter;
         }
 
-        public async Task<TEntity> FindByIdAsync(TKey id, CancellationToken cancellationToken = default)
+        public async Task<TEntity> FindByIdAsync(
+            TKey id,
+            CancellationToken cancellationToken = default
+        )
         {
             return await (await GetQueryableAsync())
                 .OrderBy(e => e.Id)
                 .FirstOrDefaultAsync(e => e.Id.Equals(id), cancellationToken);
         }
 
-        public virtual async Task<TEntity> GetByIdAsync(TKey id, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> GetByIdAsync(
+            TKey id,
+            CancellationToken cancellationToken = default
+        )
         {
             var entity = await FindByIdAsync(id, cancellationToken);
 
@@ -185,7 +235,11 @@ namespace Ray.Repository.EntityFramework
             return entity;
         }
 
-        public virtual async Task DeleteByIdAsync(TKey id, bool autoSave = false, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteByIdAsync(
+            TKey id,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             var entity = await FindByIdAsync(id, cancellationToken: cancellationToken);
             if (entity == null)
@@ -196,7 +250,11 @@ namespace Ray.Repository.EntityFramework
             await DeleteAsync(entity, autoSave, cancellationToken);
         }
 
-        public virtual async Task DeleteManyByIdsAsync(IEnumerable<TKey> ids, bool autoSave = false, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteManyByIdsAsync(
+            IEnumerable<TKey> ids,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             var query = (await GetQueryableAsync()).Where(x => ids.Contains(x.Id));
             var entities = await QueryableToListAsync(query, cancellationToken);
@@ -204,8 +262,11 @@ namespace Ray.Repository.EntityFramework
             await DeleteManyAsync(entities, autoSave, cancellationToken);
         }
 
-
-        public virtual async Task HardDeleteByIdAsync(TKey id, bool autoSave = false, CancellationToken cancellationToken = default)
+        public virtual async Task HardDeleteByIdAsync(
+            TKey id,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             using (_softDeleteFilter?.Disable())
             {
@@ -215,26 +276,32 @@ namespace Ray.Repository.EntityFramework
                     return;
                 }
 
-                var hardDeleteEntities = (HashSet<IEntity>)UnitOfWork.Items.GetOrAdd(
-                    UnitOfWorkItemNames.HardDeletedEntities,
-                    () => new HashSet<IEntity>()
-                );
+                var hardDeleteEntities =
+                    (HashSet<IEntity>)
+                        UnitOfWork.Items.GetOrAdd(
+                            UnitOfWorkItemNames.HardDeletedEntities,
+                            () => new HashSet<IEntity>()
+                        );
 
                 hardDeleteEntities.Add(entity);
                 await DeleteAsync(entity, autoSave, cancellationToken);
             }
         }
 
-        public virtual async Task HardDeleteManyByIdsAsync(IEnumerable<TKey> ids, bool autoSave = false, CancellationToken cancellationToken = default)
+        public virtual async Task HardDeleteManyByIdsAsync(
+            IEnumerable<TKey> ids,
+            bool autoSave = false,
+            CancellationToken cancellationToken = default
+        )
         {
             using (_softDeleteFilter?.Disable())
             {
-                var entities = await (await GetQueryableAsync()).Where(x => ids.Contains(x.Id)).ToListAsync(cancellationToken);
+                var entities = await (await GetQueryableAsync())
+                    .Where(x => ids.Contains(x.Id))
+                    .ToListAsync(cancellationToken);
 
                 await HardDeleteManyAsync(entities, autoSave, cancellationToken);
             }
         }
     }
-
-
 }

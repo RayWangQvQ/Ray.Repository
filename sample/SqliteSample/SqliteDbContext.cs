@@ -6,9 +6,8 @@ namespace SqliteSample
 {
     public class SqliteDbContext : RayDbContext<SqliteDbContext>
     {
-        public SqliteDbContext(DbContextOptions<SqliteDbContext> options) :base(options)
-        {
-        }
+        public SqliteDbContext(DbContextOptions<SqliteDbContext> options)
+            : base(options) { }
 
         public virtual DbSet<Book> Books { get; set; }
     }

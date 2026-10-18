@@ -3,7 +3,7 @@ using Ray.DDD;
 
 namespace SqliteSample.Entities
 {
-    public class Book:IEntity<long>
+    public class Book : IEntity<long>
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }

@@ -7,9 +7,7 @@ using Ray.DDD;
 
 namespace Ray.Repository
 {
-    public interface IRepository
-    {
-    }
+    public interface IRepository { }
 
     public interface IRepository<TEntity> : IRepository
         where TEntity : class, IEntity
@@ -18,7 +16,5 @@ namespace Ray.Repository
     }
 
     public interface IRepository<TEntity, TKey> : IRepository<TEntity>
-        where TEntity : class, IEntity
-    {
-    }
+        where TEntity : class, IEntity { }
 }

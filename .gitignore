@@ -396,3 +396,10 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# WorkBuddy workspace data
+.workbuddy/
+
+# Test coverage output
+CoverageReport/
+TestResults/

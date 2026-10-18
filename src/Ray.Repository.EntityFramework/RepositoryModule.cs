@@ -8,7 +8,10 @@ namespace Ray.Repository.EntityFramework
 {
     public static class RepositoryModule
     {
-        public static void AddDefaultRepositories<TDbContext>(this IServiceCollection services, Action<DbContextOptionsBuilder> optionsAction)
+        public static void AddDefaultRepositories<TDbContext>(
+            this IServiceCollection services,
+            Action<DbContextOptionsBuilder> optionsAction
+        )
             where TDbContext : RayDbContext<TDbContext>
         {
             // MediatR
@@ -23,11 +26,6 @@ namespace Ray.Repository.EntityFramework
             // DbContext
             services.AddDbContext<TDbContext>(optionsBuilder =>
             {
-#if DEBUG
-                optionsBuilder.LogTo(Console.WriteLine);
-                optionsBuilder.EnableSensitiveDataLogging();
-#endif
-
                 optionsAction?.Invoke(optionsBuilder);
             });
 
@@ -44,7 +42,10 @@ namespace Ray.Repository.EntityFramework
             }
         }
 
-        public static void AddIdentityDefaultRepositories<TDbContext>(this IServiceCollection services, Action<DbContextOptionsBuilder> optionsAction)
+        public static void AddIdentityDefaultRepositories<TDbContext>(
+            this IServiceCollection services,
+            Action<DbContextOptionsBuilder> optionsAction
+        )
             where TDbContext : RayIdentityDbContext<TDbContext>
         {
             // MediatR
@@ -59,11 +60,6 @@ namespace Ray.Repository.EntityFramework
             // DbContext
             services.AddDbContext<TDbContext>(optionsBuilder =>
             {
-#if DEBUG
-                optionsBuilder.LogTo(Console.WriteLine);
-                optionsBuilder.EnableSensitiveDataLogging();
-#endif
-
                 optionsAction?.Invoke(optionsBuilder);
             });
 
@@ -80,9 +76,11 @@ namespace Ray.Repository.EntityFramework
             }
         }
 
-        public static IServiceCollection AddDefaultRepository(this IServiceCollection services,
+        public static IServiceCollection AddDefaultRepository(
+            this IServiceCollection services,
             Type entityType,
-            Type repositoryImplementationType)
+            Type repositoryImplementationType
+        )
         {
             //IBasicRepository<TEntity>
             var basicRepositoryInterface = typeof(IBaseRepository<>).MakeGenericType(entityType);
@@ -102,16 +100,28 @@ namespace Ray.Repository.EntityFramework
             if (primaryKeyType != null)
             {
                 //IBasicRepository<TEntity, TKey>
-                var basicRepositoryInterfaceWithPk = typeof(IBaseRepository<,>).MakeGenericType(entityType, primaryKeyType);
+                var basicRepositoryInterfaceWithPk = typeof(IBaseRepository<,>).MakeGenericType(
+                    entityType,
+                    primaryKeyType
+                );
                 if (basicRepositoryInterfaceWithPk.IsAssignableFrom(repositoryImplementationType))
                 {
-                    services.TryAddTransient(basicRepositoryInterfaceWithPk, repositoryImplementationType);
+                    services.TryAddTransient(
+                        basicRepositoryInterfaceWithPk,
+                        repositoryImplementationType
+                    );
 
                     //IRepository<TEntity, TKey>
-                    var repositoryInterfaceWithPk = typeof(IRepository<,>).MakeGenericType(entityType, primaryKeyType);
+                    var repositoryInterfaceWithPk = typeof(IRepository<,>).MakeGenericType(
+                        entityType,
+                        primaryKeyType
+                    );
                     if (repositoryInterfaceWithPk.IsAssignableFrom(repositoryImplementationType))
                     {
-                        services.TryAddTransient(repositoryInterfaceWithPk, repositoryImplementationType);
+                        services.TryAddTransient(
+                            repositoryInterfaceWithPk,
+                            repositoryImplementationType
+                        );
                     }
                 }
             }
@@ -122,7 +132,9 @@ namespace Ray.Repository.EntityFramework
         private static IEnumerable<Type> GetEntityTypesFromDbContext(Type dbContextType)
         {
             //取dbContext里所有DbSet，然后过滤出所有实现IEntity的实体
-            var dbContextDbSetProperties = dbContextType.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            var dbContextDbSetProperties = dbContextType
+                .GetTypeInfo()
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(pi => IsAssignableToGenericType(pi.PropertyType, typeof(DbSet<>)));
             foreach (var property in dbContextDbSetProperties)
             {
@@ -142,7 +154,10 @@ namespace Ray.Repository.EntityFramework
 
             foreach (var interfaceType in givenTypeInfo.GetInterfaces())
             {
-                if (interfaceType.GetTypeInfo().IsGenericType && interfaceType.GetGenericTypeDefinition() == genericType)
+                if (
+                    interfaceType.GetTypeInfo().IsGenericType
+                    && interfaceType.GetGenericTypeDefinition() == genericType
+                )
                 {
                     return true;
                 }
@@ -156,29 +171,43 @@ namespace Ray.Repository.EntityFramework
             return IsAssignableToGenericType(givenTypeInfo.BaseType, genericType);
         }
 
-        private static Type GetDefaultRepositoryImplementationType(Type originalDbContextType, Type entityType)
+        private static Type GetDefaultRepositoryImplementationType(
+            Type originalDbContextType,
+            Type entityType
+        )
         {
             var primaryKeyType = GetPrimaryKeyType(entityType);
 
             if (primaryKeyType == null)
             {
-                return typeof(EFBaseRepository<,>).MakeGenericType(originalDbContextType, entityType);
+                return typeof(EFBaseRepository<,>).MakeGenericType(
+                    originalDbContextType,
+                    entityType
+                );
             }
 
-            return typeof(EFBaseRepository<,,>).MakeGenericType(originalDbContextType, entityType, primaryKeyType);
+            return typeof(EFBaseRepository<,,>).MakeGenericType(
+                originalDbContextType,
+                entityType,
+                primaryKeyType
+            );
         }
 
         private static Type GetPrimaryKeyType(Type entityType)
         {
             if (!typeof(IEntity).IsAssignableFrom(entityType))
             {
-                throw new Exception($"Given {nameof(entityType)} is not an entity. It should implement {typeof(IEntity).AssemblyQualifiedName}!");
+                throw new Exception(
+                    $"Given {nameof(entityType)} is not an entity. It should implement {typeof(IEntity).AssemblyQualifiedName}!"
+                );
             }
 
             foreach (var interfaceType in entityType.GetTypeInfo().GetInterfaces())
             {
-                if (interfaceType.GetTypeInfo().IsGenericType &&
-                    interfaceType.GetGenericTypeDefinition() == typeof(IEntity<>))
+                if (
+                    interfaceType.GetTypeInfo().IsGenericType
+                    && interfaceType.GetGenericTypeDefinition() == typeof(IEntity<>)
+                )
                 {
                     return interfaceType.GenericTypeArguments[0];
                 }

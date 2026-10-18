@@ -30,7 +30,6 @@ namespace SqlServerSample
 
             app.UseAuthorization();
 
-
             app.MapControllers();
 
             app.Run();
