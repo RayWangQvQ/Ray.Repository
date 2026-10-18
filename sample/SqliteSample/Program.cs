@@ -1,3 +1,4 @@
+using Mediator;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Ray.Repository.EntityFramework;
@@ -16,6 +17,8 @@ namespace SqliteSample
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddMediator();
 
             builder.Services.AddDefaultRepositories<SqliteDbContext>(op =>
             {

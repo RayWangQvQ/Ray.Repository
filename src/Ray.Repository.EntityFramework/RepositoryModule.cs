@@ -14,12 +14,6 @@ namespace Ray.Repository.EntityFramework
         )
             where TDbContext : RayDbContext<TDbContext>
         {
-            // MediatR
-            services.AddMediatR(c =>
-            {
-                c.RegisterServicesFromAssembly(typeof(TDbContext).Assembly);
-            });
-
             // DateFilter
             services.AddDataFilter();
 
@@ -48,12 +42,6 @@ namespace Ray.Repository.EntityFramework
         )
             where TDbContext : RayIdentityDbContext<TDbContext>
         {
-            // MediatR
-            services.AddMediatR(c =>
-            {
-                c.RegisterServicesFromAssembly(typeof(TDbContext).Assembly);
-            });
-
             // DateFilter
             services.AddDataFilter();
 
