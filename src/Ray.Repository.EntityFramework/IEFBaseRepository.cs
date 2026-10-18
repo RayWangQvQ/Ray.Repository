@@ -16,9 +16,8 @@ namespace Ray.Repository.EntityFramework
         Task<DbSet<TEntity>> GetDbSetAsync();
     }
 
-    public interface IEFBaseRepository<TEntity, TKey> : IEFBaseRepository<TEntity>, IBaseRepository<TEntity, TKey>
-        where TEntity : class, IEntity<TKey>
-    {
-
-    }
+    public interface IEFBaseRepository<TEntity, TKey>
+        : IEFBaseRepository<TEntity>,
+            IBaseRepository<TEntity, TKey>
+        where TEntity : class, IEntity<TKey> { }
 }

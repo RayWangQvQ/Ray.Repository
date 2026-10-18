@@ -59,9 +59,9 @@ jobs:
     - name: Check code formatting
       run: |
         echo "🎨 Checking code formatting with CSharpier..."
-        dotnet csharpier --check .
+        dotnet csharpier check .
         if [ $? -ne 0 ]; then
-          echo "❌ Code formatting check failed! Please run 'dotnet csharpier .' to fix formatting issues."
+          echo "❌ Code formatting check failed! Please run 'dotnet csharpier format .' to fix formatting issues."
           exit 1
         fi
         echo "✅ Code formatting check passed!"

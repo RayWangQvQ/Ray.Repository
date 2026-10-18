@@ -17,7 +17,6 @@ namespace SqliteSample
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-
             builder.Services.AddDefaultRepositories<SqliteDbContext>(op =>
             {
                 var conn = builder.Configuration["ConnectionStrings:Default"];
@@ -34,7 +33,6 @@ namespace SqliteSample
             }
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

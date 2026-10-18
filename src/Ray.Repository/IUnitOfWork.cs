@@ -10,9 +10,13 @@ namespace Ray.Repository
     {
         Dictionary<string, object> Items { get; }
 
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task<int> SaveChangesAsync(
+            CancellationToken cancellationToken = default(CancellationToken)
+        );
 
-        Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> SaveEntitiesAsync(
+            CancellationToken cancellationToken = default(CancellationToken)
+        );
     }
 
     public static class UnitOfWorkItemNames

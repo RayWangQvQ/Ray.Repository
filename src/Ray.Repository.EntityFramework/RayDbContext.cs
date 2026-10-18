@@ -1,15 +1,15 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Ray.DDD;
 
 namespace Ray.Repository.EntityFramework
@@ -32,13 +32,19 @@ namespace Ray.Repository.EntityFramework
             Initialize();
         }
 
-        public RayDbContext(DbContextOptions<TServiceDbContext> options, IMediator mediator) : base(options)
+        public RayDbContext(DbContextOptions<TServiceDbContext> options, IMediator mediator)
+            : base(options)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             Initialize();
         }
 
-        public RayDbContext(DbContextOptions<TServiceDbContext> options, IMediator mediator, IDataFilter<ISoftDelete> softDeleteFilter) : base(options)
+        public RayDbContext(
+            DbContextOptions<TServiceDbContext> options,
+            IMediator mediator,
+            IDataFilter<ISoftDelete> softDeleteFilter
+        )
+            : base(options)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _softDeleteFilter = softDeleteFilter;
@@ -52,7 +58,7 @@ namespace Ray.Repository.EntityFramework
         }
 
         protected virtual bool IsSoftDeleteFilterEnabled => _softDeleteFilter?.IsEnabled ?? false;
-        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -65,14 +71,16 @@ namespace Ray.Repository.EntityFramework
             }
         }
 
-        private static readonly MethodInfo ConfigureBasePropertiesMethodInfo
-            = typeof(RayDbContext<TServiceDbContext>)
-                .GetMethod(
-                    nameof(ConfigureBaseProperties),
-                    BindingFlags.Instance | BindingFlags.NonPublic
-                );
+        private static readonly MethodInfo ConfigureBasePropertiesMethodInfo =
+            typeof(RayDbContext<TServiceDbContext>).GetMethod(
+                nameof(ConfigureBaseProperties),
+                BindingFlags.Instance | BindingFlags.NonPublic
+            );
 
-        protected virtual void ConfigureBaseProperties<TEntity>(ModelBuilder modelBuilder, IMutableEntityType mutableEntityType)
+        protected virtual void ConfigureBaseProperties<TEntity>(
+            ModelBuilder modelBuilder,
+            IMutableEntityType mutableEntityType
+        )
             where TEntity : class
         {
             if (mutableEntityType.IsOwned())
@@ -97,20 +105,28 @@ namespace Ray.Repository.EntityFramework
                 b.Property(nameof(ISoftDelete.IsSoftDeleted))
                     .IsRequired()
                     .HasDefaultValue(false)
-                    .HasColumnName(nameof(ISoftDelete.IsSoftDeleted))
-                    ;
+                    .HasColumnName(nameof(ISoftDelete.IsSoftDeleted));
             }
         }
 
-        protected virtual void TryConfigureGlobalFilters<TEntity>(ModelBuilder modelBuilder, IMutableEntityType mutableEntityType) where TEntity : class
+        protected virtual void TryConfigureGlobalFilters<TEntity>(
+            ModelBuilder modelBuilder,
+            IMutableEntityType mutableEntityType
+        )
+            where TEntity : class
         {
-            if (mutableEntityType.BaseType == null && typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
+            if (
+                mutableEntityType.BaseType == null
+                && typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity))
+            )
             {
                 Expression<Func<TEntity, bool>> filterExpression = null;
 
                 if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
                 {
-                    filterExpression = e => !IsSoftDeleteFilterEnabled || !EF.Property<bool>(e, nameof(ISoftDelete.IsSoftDeleted));
+                    filterExpression = e =>
+                        !IsSoftDeleteFilterEnabled
+                        || !EF.Property<bool>(e, nameof(ISoftDelete.IsSoftDeleted));
                 }
 
                 if (filterExpression != null)
@@ -120,12 +136,16 @@ namespace Ray.Repository.EntityFramework
             }
         }
 
-        public Dictionary<string, object> Items { get; private set; } = new Dictionary<string, object>();
+        public Dictionary<string, object> Items { get; private set; } =
+            new Dictionary<string, object>();
 
-        public virtual async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<bool> SaveEntitiesAsync(
+            CancellationToken cancellationToken = default
+        )
         {
             var result = await SaveChangesAsync(cancellationToken);
-            if (_mediator != null) await this.DispatchDomainEventsAsync(_mediator);
+            if (_mediator != null)
+                await this.DispatchDomainEventsAsync(_mediator);
             return true;
         }
 
@@ -134,7 +154,10 @@ namespace Ray.Repository.EntityFramework
             ApplyForTrackedEntity(e.Entry);
         }
 
-        protected virtual void ChangeTracker_StateChanged(object sender, EntityStateChangedEventArgs e)
+        protected virtual void ChangeTracker_StateChanged(
+            object sender,
+            EntityStateChangedEventArgs e
+        )
         {
             ApplyForTrackedEntity(e.Entry);
         }
@@ -151,9 +174,11 @@ namespace Ray.Repository.EntityFramework
 
         protected virtual void ApplyConceptsForDeletedEntity(EntityEntry entry)
         {
-            if (!(entry.Entity is ISoftDelete)) return;
+            if (!(entry.Entity is ISoftDelete))
+                return;
 
-            if (IsHardDeleted(entry)) return;
+            if (IsHardDeleted(entry))
+                return;
 
             entry.Reload();
             ((ISoftDelete)entry.Entity).IsSoftDeleted = true;
@@ -161,25 +186,27 @@ namespace Ray.Repository.EntityFramework
 
         protected virtual bool IsHardDeleted(EntityEntry entry)
         {
-            var hardDeletedEntityItemValue = this.Items.TryGetValue(UnitOfWorkItemNames.HardDeletedEntities, out object obj)
+            var hardDeletedEntityItemValue = this.Items.TryGetValue(
+                UnitOfWorkItemNames.HardDeletedEntities,
+                out object obj
+            )
                 ? obj
                 : default;
             var hardDeletedEntities = hardDeletedEntityItemValue as HashSet<IEntity>;
-            if (hardDeletedEntities == null) return false;
+            if (hardDeletedEntities == null)
+                return false;
 
             return hardDeletedEntities.Contains(entry.Entity);
         }
 
         public virtual async Task DispatchDomainEventsAsync(IMediator mediator)
         {
-            var domainEntities = this.ChangeTracker
-                .Entries<Entity>()
+            var domainEntities = this
+                .ChangeTracker.Entries<Entity>()
                 .Where(x => x.Entity.DomainEvents != null && x.Entity.DomainEvents.Any())
                 .ToList();
 
-            var domainEvents = domainEntities
-                .SelectMany(x => x.Entity.DomainEvents)
-                .ToList();
+            var domainEvents = domainEntities.SelectMany(x => x.Entity.DomainEvents).ToList();
 
             domainEntities.ForEach(entity => entity.Entity.ClearDomainEvents());
 
