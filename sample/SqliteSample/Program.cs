@@ -1,3 +1,4 @@
+using Mediator;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Ray.Repository.EntityFramework;
@@ -17,11 +18,13 @@ namespace SqliteSample
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDefaultRepositories<SqliteDbContext>(op =>
-            {
-                var conn = builder.Configuration["ConnectionStrings:Default"];
-                op.UseSqlite(conn);
-            });
+            builder
+                .Services.AddMediator()
+                .AddDefaultRepositories<SqliteDbContext>(op =>
+                {
+                    var conn = builder.Configuration["ConnectionStrings:Default"];
+                    op.UseSqlite(conn);
+                });
 
             var app = builder.Build();
 

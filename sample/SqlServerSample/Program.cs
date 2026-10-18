@@ -1,3 +1,4 @@
+using Mediator;
 using Microsoft.EntityFrameworkCore;
 using Ray.Repository.EntityFramework;
 
@@ -13,11 +14,15 @@ namespace SqlServerSample
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDefaultRepositories<SqlServerDbContext>(op =>
-            {
-                var conn = builder.Configuration["ConnectionStrings:Default"];
-                op.UseSqlServer(conn);
-            });
+            builder.Services.AddMediator();
+
+            builder
+                .Services.AddMediator()
+                .AddDefaultRepositories<SqlServerDbContext>(op =>
+                {
+                    var conn = builder.Configuration["ConnectionStrings:Default"];
+                    op.UseSqlServer(conn);
+                });
 
             var app = builder.Build();
 

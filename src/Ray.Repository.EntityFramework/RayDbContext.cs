@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using MediatR;
+using Mediator;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -17,7 +17,7 @@ namespace Ray.Repository.EntityFramework
     public abstract class RayDbContext<TServiceDbContext> : DbContext, IUnitOfWork
         where TServiceDbContext : DbContext
     {
-        private readonly IMediator _mediator;
+        private readonly IPublisher _publisher;
 
         private readonly IDataFilter<ISoftDelete> _softDeleteFilter;
 
@@ -32,21 +32,21 @@ namespace Ray.Repository.EntityFramework
             Initialize();
         }
 
-        public RayDbContext(DbContextOptions<TServiceDbContext> options, IMediator mediator)
+        public RayDbContext(DbContextOptions<TServiceDbContext> options, IPublisher publisher)
             : base(options)
         {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
             Initialize();
         }
 
         public RayDbContext(
             DbContextOptions<TServiceDbContext> options,
-            IMediator mediator,
+            IPublisher publisher,
             IDataFilter<ISoftDelete> softDeleteFilter
         )
             : base(options)
         {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
             _softDeleteFilter = softDeleteFilter;
             Initialize();
         }
@@ -144,8 +144,8 @@ namespace Ray.Repository.EntityFramework
         )
         {
             var result = await SaveChangesAsync(cancellationToken);
-            if (_mediator != null)
-                await this.DispatchDomainEventsAsync(_mediator);
+            if (_publisher != null)
+                await this.DispatchDomainEventsAsync(_publisher);
             return true;
         }
 
@@ -199,7 +199,7 @@ namespace Ray.Repository.EntityFramework
             return hardDeletedEntities.Contains(entry.Entity);
         }
 
-        public virtual async Task DispatchDomainEventsAsync(IMediator mediator)
+        public virtual async Task DispatchDomainEventsAsync(IPublisher publisher)
         {
             var domainEntities = this
                 .ChangeTracker.Entries<Entity>()
@@ -211,7 +211,7 @@ namespace Ray.Repository.EntityFramework
             domainEntities.ForEach(entity => entity.Entity.ClearDomainEvents());
 
             foreach (var domainEvent in domainEvents)
-                await mediator.Publish(domainEvent);
+                await publisher.Publish(domainEvent, default);
         }
     }
 }
