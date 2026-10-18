@@ -16,11 +16,13 @@ namespace SqlServerSample
 
             builder.Services.AddMediator();
 
-            builder.Services.AddDefaultRepositories<SqlServerDbContext>(op =>
-            {
-                var conn = builder.Configuration["ConnectionStrings:Default"];
-                op.UseSqlServer(conn);
-            });
+            builder
+                .Services.AddMediator()
+                .AddDefaultRepositories<SqlServerDbContext>(op =>
+                {
+                    var conn = builder.Configuration["ConnectionStrings:Default"];
+                    op.UseSqlServer(conn);
+                });
 
             var app = builder.Build();
 

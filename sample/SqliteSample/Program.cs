@@ -18,13 +18,13 @@ namespace SqliteSample
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddMediator();
-
-            builder.Services.AddDefaultRepositories<SqliteDbContext>(op =>
-            {
-                var conn = builder.Configuration["ConnectionStrings:Default"];
-                op.UseSqlite(conn);
-            });
+            builder
+                .Services.AddMediator()
+                .AddDefaultRepositories<SqliteDbContext>(op =>
+                {
+                    var conn = builder.Configuration["ConnectionStrings:Default"];
+                    op.UseSqlite(conn);
+                });
 
             var app = builder.Build();
 
