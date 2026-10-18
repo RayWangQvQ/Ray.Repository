@@ -1,0 +1,168 @@
+name: Publish stable release
+
+# Stable channel: maintainer triggers via Actions (workflow_dispatch), picks the
+# bump level, then everything is automated: version -> tag -> Release -> CHANGELOG.
+on:
+  workflow_dispatch:
+    inputs:
+      level:
+        description: "Bump level (based on latest stable tag)"
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Serialize: prevent concurrent runs from computing the same version
+concurrency:
+  group: stable-release
+  cancel-in-progress: false
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  NUGET_SOURCE: 'https://api.nuget.org/v3/index.json'
+
+jobs:
+  determine-version:
+    name: Determine stable version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      since: ${{ steps.version.outputs.since }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - id: version
+        env:
+          LEVEL: ${{ inputs.level }}
+        run: |
+          since=$(bash ./scripts/version-next.sh latest)
+          version=$(bash ./scripts/version-next.sh stable "$LEVEL")
+          # a computed version that already has a tag means history was hand-edited
+          if git rev-parse -q --verify "refs/tags/$version" >/dev/null; then
+            echo "::error::tag $version already exists, refusing release"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "since=$since" >> "$GITHUB_OUTPUT"
+          echo "release: ${since:-repo start} -> $version ($LEVEL)"
+
+  publish:
+    name: Build, test and publish stable package
+    needs: determine-version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore -p:Version=${{ needs.determine-version.outputs.version }}
+
+      - name: Test with coverage
+        run: |
+          chmod +x ./scripts/generate-coverage.sh
+          ./scripts/generate-coverage.sh --threshold 50 --no-threshold-check
+
+      - name: Pack
+        run: |
+          mkdir -p ./bin/release-nupkgs
+          rm -rf ./bin/release-nupkgs/*
+          dotnet pack src/Ray.Repository/Ray.Repository.csproj \
+            --configuration Release --no-build \
+            --output ./bin/release-nupkgs \
+            -p:Version=${{ needs.determine-version.outputs.version }} \
+            -p:IncludeSymbols=true \
+            -p:SymbolPackageFormat=snupkg
+          dotnet pack src/Ray.Repository.EntityFramework/Ray.Repository.EntityFramework.csproj \
+            --configuration Release --no-build \
+            --output ./bin/release-nupkgs \
+            -p:Version=${{ needs.determine-version.outputs.version }} \
+            -p:IncludeSymbols=true \
+            -p:SymbolPackageFormat=snupkg
+
+      - name: Push to NuGet
+        run: |
+          if [ -z "${{ secrets.NUGET_API_KEY }}" ]; then
+            echo "::warning::NUGET_API_KEY not set, skipping push"
+          else
+            # `dotnet nuget push *.nupkg` auto-pushes the sibling *.snupkg to the
+            # same source. Pushing the snupkg again separately re-triggers nuget.org
+            # symbols validation, which fails with "pdb(s) ... not found" when the
+            # nupkg already exists (--skip-duplicate) or on any re-push.
+            dotnet nuget push ./bin/release-nupkgs/*.nupkg \
+              --api-key ${{ secrets.NUGET_API_KEY }} \
+              --source ${{ env.NUGET_SOURCE }} \
+              --skip-duplicate
+          fi
+
+      # tag + Release; notes auto-generated, previous_tag anchors the comparison.
+      # Since is always non-empty after the one-time tag migration to 0.1.0.
+      - name: Create GitHub Release and tag
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.determine-version.outputs.version }}
+          name: Ray.Repository ${{ needs.determine-version.outputs.version }}
+          generate_release_notes: 'true'
+          previous_tag: ${{ needs.determine-version.outputs.since }}
+          files: |
+            ./bin/release-nupkgs/*.nupkg
+            ./bin/release-nupkgs/*.snupkg
+          make_latest: 'true'
+          fail_on_unmatched_files: true
+
+  update-changelog:
+    name: Update changelog via PR
+    needs: [determine-version, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # GITHUB_TOKEN PRs do not trigger CI (GitHub restriction), so this only
+      # opens the PR; the maintainer merges it (docs-only change).
+      - name: Commit CHANGELOG section and open PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.determine-version.outputs.version }}
+          SINCE: ${{ needs.determine-version.outputs.since }}
+          BRANCH: chore/changelog-${{ needs.determine-version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash ./scripts/update-changelog.sh "$VERSION" --since "$SINCE"
+          git add CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "CHANGELOG already up to date for $VERSION"
+            exit 0
+          fi
+          git checkout -b "$BRANCH"
+          git commit -m "docs(changelog): $VERSION"
+          git push -f origin "$BRANCH"
+          pr_url=$(gh pr view "$BRANCH" --json url -q .url 2>/dev/null || true)
+          if [ -z "$pr_url" ]; then
+            pr_url=$(gh pr create --base main --head "$BRANCH" \
+              --title "docs(changelog): $VERSION" \
+              --body "Stable release $VERSION changelog back-write, generated by release.yml. Docs-only change; merge by maintainer.")
+          fi
+          echo "CHANGELOG PR ready: $pr_url"

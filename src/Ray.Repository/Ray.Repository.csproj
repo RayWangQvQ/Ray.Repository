@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+	<Import Project="..\..\common.props" />
+
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AssemblyName>Ray.Repository</AssemblyName>
 		<PackageId>Ray.Repository</PackageId>
-		<Version>0.0.3</Version>
 		<Authors>Ray</Authors>
 		<Company>Ray</Company>
 		<PackageProjectUrl>https://github.com/RayWangQvQ/Ray.Repository</PackageProjectUrl>
