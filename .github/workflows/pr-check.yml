@@ -5,6 +5,10 @@ on:
     branches: [ main ]
     types: [opened, synchronize, reopened, ready_for_review]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   DOTNET_VERSION: '10.0.x'
   NUGET_SOURCE: 'https://api.nuget.org/v3/index.json'
@@ -50,7 +54,7 @@ jobs:
         echo "✅ Build passed!"
 
     - name: Install CSharpier
-      run: dotnet tool install -g csharpier --version ${{ env.CSHARPIER_VERSION }}
+      run: dotnet tool restore
 
     - name: Check code formatting
       run: |
