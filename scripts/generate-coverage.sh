@@ -135,7 +135,7 @@ run_tests() {
         --logger trx \
         --logger "console;verbosity=detailed" \
         -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura \
-        -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Include="[Ray.Repository]*" \
+        -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Include="[Ray.Repository]*,[Ray.Repository.EntityFramework]*" \
         -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Exclude="[Ray.Repository.Tests]*"
     
     if [ $? -ne 0 ]; then

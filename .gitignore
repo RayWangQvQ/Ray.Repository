@@ -399,3 +399,7 @@ FodyWeavers.xsd
 
 # WorkBuddy workspace data
 .workbuddy/
+
+# Test coverage output
+CoverageReport/
+TestResults/
